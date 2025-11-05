@@ -1,5 +1,1 @@
-echo "1.9.5" > .terraform-version
-git add .terraform-version
-git commit -m "chore(stack): pin terraform core via .terraform-version"
-git push
-
+1.9.5
