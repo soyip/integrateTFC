@@ -1,4 +1,3 @@
-# 예: 1.9 계열 고정
 echo "1.9.5" > .terraform-version
 git add .terraform-version
 git commit -m "chore(stack): pin terraform core via .terraform-version"
