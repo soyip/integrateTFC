@@ -1,0 +1,31 @@
+# === Terraform 기본 캐시 / 상태 / 로그 ===
+# 로컬 상태 파일 (remote backend 쓰면 절대 커밋 금지)
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# CLI 출력 플랜 파일
+*.tfplan
+
+# Terraform 작업 디렉토리 (init 시 생성)
+.terraform/
+.terraformrc
+terraform.rc
+
+# Terraform lock file은 반드시 포함해야 함 (❌ 제외 금지)
+!.terraform.lock.hcl
+
+# Terragrunt 캐시/로그 (있다면)
+.terragrunt-cache/
+*.terragrunt-debug.log
+
+# IDE 관련 무시
+.vscode/
+.idea/
+*.iml
+.DS_Store
+
+# 크레덴셜 무시
+*.list
+
