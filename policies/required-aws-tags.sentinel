@@ -1,4 +1,5 @@
 import "tfplan/v2" as tfplan
+import "strings"
 
 # 필수 태그 목록
 required_tags = ["Owner", "Environment"]
@@ -7,42 +8,35 @@ required_tags = ["Owner", "Environment"]
 exempt_types = [
   "aws_iam_role",
   "aws_iam_policy",
-  "aws_iam_role_policy_attachment"
+  "aws_iam_role_policy_attachment",
 ]
 
 # === 리소스 필터 ===
 # 관리형 aws_리소스 중 생성/수정 액션이고 제외 목록에 없는 것만 대상
 managed_aws_changes = filter tfplan.resource_changes as _, rc {
   rc.mode is "managed" and
-  rc.type matches /^aws_/ and
-  not (rc.type in exempt_types) and
-  (
-    rc.change.actions contains "create" or
-    rc.change.actions contains "update"
-  )
+  strings.has_prefix(rc.type, "aws_") and
+  rc.type not in exempt_types and
+  (rc.change.actions contains "create" or rc.change.actions contains "update")
 }
 
 # === 태그 누락 검사 ===
 violations = {}
 
 for managed_aws_changes as addr, rc {
-  after = {}
-  if rc.change.after is object {
-    after = rc.change.after
-  }
-
-  tags = {}
-  if "tags" in after {
-    tags = after.tags
-  }
-
+  after = rc.change.after else {}
+  
+  tags = after.tags else {}
+  
   missing = []
   for required_tags as t {
-    if not (t in tags) or (tags[t] is string and length(trim(tags[t])) == 0) {
-      missing += [t]
+    if t not in keys(tags) {
+      append(missing, t)
+    } else if length(strings.trim_space(string(tags[t]))) == 0 {
+      append(missing, t)
     }
   }
-
+  
   if length(missing) > 0 {
     violations[addr] = missing
   }
@@ -50,5 +44,5 @@ for managed_aws_changes as addr, rc {
 
 # 정책 본문: 위반이 없으면 통과
 main = rule {
-  length(violations) is 0
+  length(violations) == 0
 }
